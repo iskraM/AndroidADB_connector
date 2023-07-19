@@ -215,7 +215,7 @@ namespace AndroidADB_connector
                                 continue;
                             } else
                             {
-                                devices.Add(new ADB_Device() { DeviceID = devSer });
+                                devices.Add(new ADB_Device() { DeviceID = devSer, IP = ip_port[0], Port = int.Parse(ip_port[1]) });
                             }
                         } else
                         {
@@ -253,7 +253,7 @@ namespace AndroidADB_connector
             p.StartInfo = startInfo;
 
             p.Start();
-            p.StandardInput.WriteLine($"adb -s {device.DeviceID} shell getprop ro.product.model");
+            p.StandardInput.WriteLine($"adb -s {(device.Port != 0 ? device.IP + ":" + device.Port : device.DeviceID)} shell getprop ro.product.model");
             p.StandardInput.WriteLine("exit");
             exited = p.WaitForExit(1000);
             if (!exited)
@@ -271,7 +271,7 @@ namespace AndroidADB_connector
             }
 
             p.Start();
-            p.StandardInput.WriteLine($"adb -s {device.DeviceID} shell ip route");
+            p.StandardInput.WriteLine($"adb -s {(device.Port != 0 ? device.IP + ":" + device.Port : device.DeviceID)} shell ip route");
             p.StandardInput.WriteLine("exit");
             exited = p.WaitForExit(1000);
             if (!exited)
@@ -279,9 +279,6 @@ namespace AndroidADB_connector
 
             tmpLine = p.StandardOutput.ReadToEnd();
             device.IP = Regex.Match(tmpLine, @"\b(?:\d{1,3}\.){3}\d{1,3}\b(?!\/[0-9]{2})").Value;
-
-            device.Port = -1;
-            device.Status = false;
         }
 
         private bool ConnectDevice(int port)
